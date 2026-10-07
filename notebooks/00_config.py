@@ -15,13 +15,15 @@ SCHEMA_SILVER = "crm_silver"
 SCHEMA_GOLD = "crm_gold"
 SCHEMA_META = "crm_meta"      # run logs, benchmark results, validation results
 
+
+
 # ---------- Generation ----------
 # Develop on the sample first. For the 30 GB scale run change only RUN_LABEL and
 # N_EVENTS (01_generate_source prints the N_EVENTS needed for 30 GB).
 SEED = 42
-RUN_LABEL = "sample"          # "sample" or "scale"
-N_EVENTS = 1_000_000          # clean, unique events before injecting bad rows
-N_CONTACTS = 100_000
+RUN_LABEL = "medium"          # "sample", "medium" or "scale"
+N_EVENTS = 100_000_000        # clean, unique events before injecting bad rows
+N_CONTACTS = 5_000_000
 N_CAMPAIGNS = 50
 START_DATE = "2026-01-01"     # inclusive
 END_DATE = "2026-06-30"       # inclusive
