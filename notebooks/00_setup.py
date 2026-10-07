@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # 00_setup — create schemas and record the environment
 # MAGIC Run once after linking the repo. Safe to rerun (all statements are idempotent).
