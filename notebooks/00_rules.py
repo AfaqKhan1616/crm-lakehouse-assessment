@@ -1,8 +1,4 @@
 # Databricks notebook source
-# /// script
-# [tool.databricks.environment]
-# environment_version = "6"
-# ///
 # MAGIC %md
 # MAGIC # 00_rules — validity rules, defined once
 # MAGIC
@@ -20,15 +16,16 @@
 # MAGIC Order matters: rejecting first, then deduplicating, means a valid copy of an event always survives
 # MAGIC even if another copy of the same event_id is invalid.
 # MAGIC
-# MAGIC Used via `%run ./00_rules` after `%run ./00_config`. Creating the views is idempotent and instant.
+# MAGIC The SQL lives in two functions so the same rules can also be tested on the brief's example rows
+# MAGIC (see `05_validation`). Used via `%run ./00_rules` after `%run ./00_config`.
 
 # COMMAND ----------
 
 allowed_types = ", ".join(f"'{t}'" for t in VALID_EVENT_TYPES)
 
-# Every source row, plus the first rule it breaks (NULL = valid).
-spark.sql(f"""
-CREATE OR REPLACE VIEW {V_CHECKED} AS
+def checked_sql(source):
+    """Every source row, plus the first rule it breaks (NULL = valid)."""
+    return f"""
 SELECT
   *,
   CASE
@@ -42,12 +39,11 @@ SELECT
     WHEN revenue < 0                                  THEN 'R3_negative_revenue'
     WHEN event_type <> 'conversion' AND revenue <> 0  THEN 'R3_revenue_on_non_conversion'
   END AS rejection_reason
-FROM {T_SOURCE}
-""")
+FROM {source}"""
 
-# Valid rows, one per event_id. event_date (UTC) is derived here so both models use the same date.
-spark.sql(f"""
-CREATE OR REPLACE VIEW {V_VALID} AS
+def valid_sql(checked):
+    """Valid rows, one per event_id. event_date (UTC) is derived here so both models use the same date."""
+    return f"""
 SELECT event_id, contact_id, contact_segment, campaign_id, campaign_name, channel,
        event_type, event_timestamp, CAST(event_timestamp AS DATE) AS event_date, revenue
 FROM (
@@ -56,10 +52,12 @@ FROM (
            PARTITION BY event_id
            ORDER BY event_timestamp, contact_id, campaign_id, event_type, revenue
          ) AS rn
-  FROM {V_CHECKED}
+  FROM {checked}
   WHERE rejection_reason IS NULL
 )
-WHERE rn = 1
-""")
+WHERE rn = 1"""
+
+spark.sql(f"CREATE OR REPLACE VIEW {V_CHECKED} AS {checked_sql(T_SOURCE)}")
+spark.sql(f"CREATE OR REPLACE VIEW {V_VALID} AS {valid_sql(V_CHECKED)}")
 
 print(f"Rule views ready: {V_CHECKED}, {V_VALID}")
