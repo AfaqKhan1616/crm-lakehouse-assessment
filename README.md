@@ -22,12 +22,6 @@ Both apply **identical validity rules** and return **identical business results*
 | Catalog / schemas | `workspace` / `crm_bronze`, `crm_silver`, `crm_gold`, `crm_meta` |
 | SQL warehouse | One 2X-Small warehouse available; **benchmarks ran from notebooks on serverless compute**, so warehouse-specific behaviour (result cache, warehouse startup) was not measured |
 
-**Limitations that affect the results**
-- No cluster sizing; timings depend on shared serverless capacity and can vary between runs.
-- No Spark UI on serverless; execution evidence comes from the query profile, `EXPLAIN` and Delta file statistics.
-- Daily usage quota; exceeding it stops compute until reset.
-- No billing data. Cost is discussed only through **proxies**: runtime, data size, files read, shuffle.
-- Predictive optimization is active on managed tables: the wide table was compacted from 24 to 9 files in the background between runs. Layout can change without a user command.
 
 ## 2. Repository layout and execution order
 
